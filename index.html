@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Boy Emulator</title>
+  <title>GBA Emulator</title>
   <style>
     canvas {
       image-rendering: pixelated;
       border: 1px solid black;
+      width: 480px;
+      height: 320px;
     }
   </style>
 </head>
 <body>
-  <h2>Game Boy Emulator</h2>
-  <input type="file" id="romInput" />
+  <h2>Game Boy Advance Emulator</h2>
+  <input type="file" id="romInput" accept=".gba"/>
   <br />
-  <canvas id="screen" width="160" height="144"></canvas>
+  <canvas id="screen" width="240" height="160"></canvas>
 
   <script src="memory.js"></script>
   <script src="rom.js"></script>
