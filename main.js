@@ -19,3 +19,12 @@ function handleROMLoad(event) {
   reader.readAsArrayBuffer(file);
 }
 
+function drawBlankScreen() {
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    imageData.data[i + 0] = 0xE0; 
+    imageData.data[i + 1] = 0xF8;
+    imageData.data[i + 2] = 0xD0;
+    imageData.data[i + 3] = 0xFF;
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
