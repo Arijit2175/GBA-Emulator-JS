@@ -19,6 +19,7 @@ function handleROMLoad(event) {
     const romData = new Uint8Array(reader.result);
     loadROM(romData);
     drawPlaceholderScreen();
+    console.log("ROM start byte:", memory.read8(0x08000000).toString(16))
   };
   reader.readAsArrayBuffer(file);
 }
