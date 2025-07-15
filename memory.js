@@ -17,7 +17,7 @@ function read8(addr) {
   if (addr >= 0x05000000 && addr < 0x05000400) return PRAM[addr - 0x05000000];
   if (addr >= 0x06000000 && addr < 0x06018000) return VRAM[addr - 0x06000000];
   if (addr >= 0x07000000 && addr < 0x07000400) return OAM[addr - 0x07000000];
-  if (addr >= 0x08000000 && addr < 0x0A000000) return externals.rom[addr - 0x08000000];
+  if (addr >= 0x08000000 && addr < 0x0A000000) return window.rom[addr - 0x08000000];
   return 0;
 }
 

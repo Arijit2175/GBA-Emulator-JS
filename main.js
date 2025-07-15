@@ -2,7 +2,7 @@ let canvas = document.getElementById('screen');
 let ctx = canvas.getContext('2d');
 let imageData = ctx.createImageData(240, 160);
 
-let rom = new Uint8Array(32 * 1024 * 1024); 
+window.rom = new Uint8Array(32 * 1024 * 1024); 
 let romSize = 0;
 
 document.getElementById('romInput').addEventListener('change', handleROMLoad);
