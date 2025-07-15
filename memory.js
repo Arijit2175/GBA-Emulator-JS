@@ -1,12 +1,10 @@
-const BIOS = new Uint8Array(0x4000);         
-const WRAM = new Uint8Array(0x40000);        
-const IRAM = new Uint8Array(0x8000);         
-const VRAM = new Uint8Array(0x18000);        
-const IOREG = new Uint8Array(0x400);         
-const PRAM = new Uint8Array(0x400);          
-const OAM = new Uint8Array(0x400);           
-
-externals = { rom }; 
+const BIOS = new Uint8Array(0x4000);
+const WRAM = new Uint8Array(0x40000);
+const IRAM = new Uint8Array(0x8000);
+const VRAM = new Uint8Array(0x18000);
+const IOREG = new Uint8Array(0x400);
+const PRAM = new Uint8Array(0x400);
+const OAM  = new Uint8Array(0x400);
 
 function read8(addr) {
   addr = addr >>> 0;
@@ -17,7 +15,7 @@ function read8(addr) {
   if (addr >= 0x05000000 && addr < 0x05000400) return PRAM[addr - 0x05000000];
   if (addr >= 0x06000000 && addr < 0x06018000) return VRAM[addr - 0x06000000];
   if (addr >= 0x07000000 && addr < 0x07000400) return OAM[addr - 0x07000000];
-  if (addr >= 0x08000000 && addr < 0x0A000000) return window.rom[addr - 0x08000000];
+  if (addr >= 0x08000000 && addr < 0x0A000000) return window.rom?.[addr - 0x08000000] ?? 0;
   return 0;
 }
 
@@ -39,7 +37,6 @@ function write16(addr, val) {
   write8(addr, val & 0xFF);
   write8(addr + 1, (val >> 8) & 0xFF);
 }
-
 function read32(addr) {
   return read8(addr) |
          (read8(addr + 1) << 8) |
@@ -55,6 +52,5 @@ function write32(addr, val) {
 
 window.memory = {
   read8, read16, read32,
-  write8, write16, write32,
-  BIOS, WRAM, IRAM, VRAM, OAM, IOREG, PRAM
+  write8, write16, write32
 };
