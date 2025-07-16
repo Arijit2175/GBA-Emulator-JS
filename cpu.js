@@ -43,4 +43,11 @@ function executeThumb(instr) {
       console.log(`CMP r${rd}, #${imm8} → Z=${(cpu.cpsr >>> 30) & 1}`);
       break;
     }
+    case 0b11010: { 
+      const offset11 = instr & 0x7FF;
+      const offset = ((offset11 << 21) >> 20); 
+      cpu.registers[15] += offset;
+      console.log(`B ${offset}`);
+      break;
+    }
   }
