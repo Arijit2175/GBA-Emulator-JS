@@ -20,4 +20,12 @@ function fetchThumb16() {
 function executeThumb(instr) {
   const opcode = (instr & 0xF800) >>> 11;
 
-  
+  switch(opcode) {
+    case 0b00100: { 
+      const rd = (instr >> 8) & 0x7;
+      const imm8 = instr & 0xFF;
+      cpu.registers[rd] = imm8;
+      console.log(`MOV r${rd}, #${imm8}`);
+      break;
+    }
+  }
