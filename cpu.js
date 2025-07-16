@@ -54,3 +54,9 @@ function executeThumb(instr) {
       console.warn(`Unhandled Thumb instruction: 0x${instr.toString(16)}`);
   }
 }
+
+function stepCPU() {
+  const instr = fetchThumb16();
+  executeThumb(instr);
+}
+
