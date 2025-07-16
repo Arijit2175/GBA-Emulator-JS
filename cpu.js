@@ -60,3 +60,9 @@ function stepCPU() {
   executeThumb(instr);
 }
 
+function runCPU(cycles = 100) {
+  for (let i = 0; i < cycles; i++) {
+    stepCPU();
+  }
+}
+
