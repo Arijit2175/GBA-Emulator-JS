@@ -10,3 +10,10 @@ function cpuReset() {
   cpu.cpsr = 0x00000030;          
 }
 
+function fetchThumb16() {
+  const pc = cpu.registers[15];
+  const instr = memory.read16(pc);
+  cpu.registers[15] += 2;
+  return instr;
+}
+
