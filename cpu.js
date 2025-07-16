@@ -66,3 +66,10 @@ function runCPU(cycles = 100) {
   }
 }
 
+window.cpu = {
+  registers: cpu.registers,
+  cpsr: () => cpu.cpsr,
+  reset: cpuReset,
+  step: stepCPU,
+  run: runCPU
+};
