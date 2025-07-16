@@ -35,4 +35,12 @@ function executeThumb(instr) {
       console.log(`ADD r${rd}, #${imm8}`);
       break;
     }
+    case 0b00101: { 
+      const rd = (instr >> 8) & 0x7;
+      const imm8 = instr & 0xFF;
+      const result = cpu.registers[rd] - imm8;
+      cpu.cpsr = (result === 0 ? 0x40000000 : 0); 
+      console.log(`CMP r${rd}, #${imm8} → Z=${(cpu.cpsr >>> 30) & 1}`);
+      break;
+    }
   }
