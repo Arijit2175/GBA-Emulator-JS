@@ -21,6 +21,13 @@ function handleROMLoad(event) {
     drawPlaceholderScreen();
 
     console.log("ROM start byte:", memory.read8(0x08000000).toString(16));
+
+    cpu.reset();      
+cpu.run(100);       
+
+console.log("r0:", cpu.registers[0]);
+console.log("PC:", cpu.registers[15].toString(16));
+
   };
   reader.readAsArrayBuffer(file);
 }
