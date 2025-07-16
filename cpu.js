@@ -28,4 +28,11 @@ function executeThumb(instr) {
       console.log(`MOV r${rd}, #${imm8}`);
       break;
     }
+    case 0b00110: { 
+      const rd = (instr >> 8) & 0x7;
+      const imm8 = instr & 0xFF;
+      cpu.registers[rd] += imm8;
+      console.log(`ADD r${rd}, #${imm8}`);
+      break;
+    }
   }
