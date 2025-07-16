@@ -17,3 +17,7 @@ function fetchThumb16() {
   return instr;
 }
 
+function executeThumb(instr) {
+  const opcode = (instr & 0xF800) >>> 11;
+
+  
