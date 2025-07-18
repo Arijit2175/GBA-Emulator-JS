@@ -13,8 +13,9 @@ function cpuReset() {
 function fetchThumb16() {
   const pc = cpuInternal.registers[15];
 
-  if (pc >= memory.buffer.byteLength - 1) {
-    console.warn(`PC 0x${pc.toString(16)} out of bounds`);
+  const romOffset = pc - 0x08000000;
+  if (romOffset < 0 || romOffset >= window.rom.length - 1) {
+    console.warn(`PC 0x${pc.toString(16)} out of ROM bounds`);
     return 0xFFFF;
   }
 
