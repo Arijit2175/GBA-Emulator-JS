@@ -52,6 +52,10 @@ function executeThumb(instr) {
     }
     case 0b01100:
     case 0b01101: {
+      const imm5 = (instr >> 6) & 0x1F;
+      const rb = (instr >> 3) & 0x7;
+      const rd = instr & 0x7;
+      const addr = cpuInternal.registers[rb] + (imm5 << 2);
       
     }
     default:
