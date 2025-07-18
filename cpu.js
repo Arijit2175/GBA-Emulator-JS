@@ -103,6 +103,15 @@ function executeThumb(instr) {
     console.log(`B ${offset}`);
   }
 
+  else if ((opcode & 0xF800) === 0x4800) {
+  const rd = (opcode >> 8) & 0x7;
+  const imm = (opcode & 0xFF) << 2;
+  const addr = (cpu.registers[15] + 4) & ~3;
+  const value = read32(addr + imm);
+  cpu.registers[rd] = value;
+  console.log(`LDR r${rd}, [PC, #${imm}] => ${value.toString(16)}`);
+}
+
   else {
     console.warn(`Unhandled Thumb instr: 0x${instr.toString(16)}`);
   }
