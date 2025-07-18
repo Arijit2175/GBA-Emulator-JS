@@ -50,6 +50,10 @@ function executeThumb(instr) {
       console.log(`B ${offset}`);
       break;
     }
+    case 0b01100:
+    case 0b01101: {
+      
+    }
     default:
       console.warn(`Unhandled Thumb instruction: 0x${instr.toString(16)}`);
   }
