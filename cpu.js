@@ -25,66 +25,86 @@ function fetchThumb16() {
 }
 
 function executeThumb(instr) {
-  if (instr === 0xFFFF) {
-    console.warn("Encountered invalid Thumb instruction 0xFFFF → HALT");
-    return false; 
+  const op = instr & 0xF800;
+
+  if ((op & 0xF800) === 0x2000) {
+    const rd = (instr >> 8) & 7;
+    const imm = instr & 0xFF;
+    cpuInternal.registers[rd] = imm;
+    console.log(`MOV r${rd}, #${imm}`);
   }
 
-  const opcode = (instr & 0xF800) >>> 11;
+  else if (op === 0x2800) {
+    const rd = (instr >> 8) & 7;
+    const imm = instr & 0xFF;
+    const res = cpuInternal.registers[rd] - imm;
+    cpuInternal.cpsr = (res === 0) ? 0x40000000 : 0;
+    console.log(`CMP r${rd}, #${imm} → Z=${cpuInternal.cpsr >>> 30}`);
+  }
 
-  switch (opcode) {
-    case 0b00100: { 
-      const rd = (instr >> 8) & 0x7;
-      const imm8 = instr & 0xFF;
-      cpuInternal.registers[rd] = imm8;
-      console.log(`MOV r${rd}, #${imm8}`);
-      break;
+  else if (op === 0x3000) {
+    const rd = (instr >> 8) & 7;
+    const imm = instr & 0xFF;
+    cpuInternal.registers[rd] += imm;
+    console.log(`ADD r${rd}, #${imm}`);
+  }
+
+  else if ((instr & 0xF800) === 0x4800) {
+    const rd = (instr >> 8) & 7;
+    const imm = (instr & 0xFF) << 2;
+    const addr = (cpuInternal.registers[15] & ~2) + imm;
+    const val = memory.read32(addr);
+    cpuInternal.registers[rd] = val;
+    console.log(`LDR r${rd}, [PC + ${imm}] → 0x${val.toString(16)}`);
+  }
+
+  else if ((op & 0xF600) === 0x6000) {
+    const isLoad = (op === 0x6800);
+    const imm5 = (instr >> 6) & 0x1F;
+    const rb = (instr >> 3) & 7;
+    const rd = instr & 7;
+    const addr = cpuInternal.registers[rb] + (imm5 << 2);
+    if (isLoad) {
+      cpuInternal.registers[rd] = memory.read32(addr);
+      console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}]`);
+    } else {
+      memory.write32(addr, cpuInternal.registers[rd]);
+      console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}]`);
     }
+  }
 
-    case 0b00110: { 
-      const rd = (instr >> 8) & 0x7;
-      const imm8 = instr & 0xFF;
-      cpuInternal.registers[rd] += imm8;
-      console.log(`ADD r${rd}, #${imm8}`);
-      break;
-    }
+  else if ((instr & 0xFFC0) === 0x4700) {
+    const rm = instr & 7;
+    const dest = cpuInternal.registers[rm];
+    cpuInternal.registers[15] = dest & ~1;
+    console.log(`BX r${rm} → 0x${dest.toString(16)}`);
+  }
 
-    case 0b00101: { 
-      const rd = (instr >> 8) & 0x7;
-      const imm8 = instr & 0xFF;
-      const result = cpuInternal.registers[rd] - imm8;
-      cpuInternal.cpsr = (result === 0 ? 0x40000000 : 0);
-      console.log(`CMP r${rd}, #${imm8} → Z=${(cpuInternal.cpsr >>> 30) & 1}`);
-      break;
-    }
+  else if ((instr & 0xF000) === 0xD000) {
+    const cond = (instr >> 8) & 0xF, imm = instr & 0xFF;
+    const offset = (((imm << 24) >> 23)); 
+    let take = false;
+    const z = (cpuInternal.cpsr >>> 30) & 1;
 
-    case 0b11010: { 
-      const offset11 = instr & 0x7FF;
-      const offset = ((offset11 << 21) >> 20); 
+    if (cond === 0xE) take = true;        
+    else if (cond === 0x0 && z) take = true; 
+    else if (cond === 0x1 && !z) take = true; 
+
+    if (take) {
       cpuInternal.registers[15] += offset;
-      console.log(`B ${offset}`);
-      break;
-    }
+      console.log(`B${cond.toString(16)} taken → ${offset}`);
+    } else console.log(`B${cond.toString(16)} not taken`);
+  }
 
-    case 0b01100:
-    case 0b01101: { 
-      const imm5 = (instr >> 6) & 0x1F;
-      const rb = (instr >> 3) & 0x7;
-      const rd = instr & 0x7;
-      const addr = cpuInternal.registers[rb] + (imm5 << 2);
+  else if ((instr & 0xF800) === 0xE000) {
+    const imm11 = instr & 0x7FF;
+    const offset = ((imm11 << 21) >> 20);
+    cpuInternal.registers[15] += offset;
+    console.log(`B ${offset}`);
+  }
 
-      if (opcode & 1) {
-        cpuInternal.registers[rd] = memory.read32(addr);
-        console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}] → 0x${cpuInternal.registers[rd].toString(16)}`);
-      } else {
-        memory.write32(addr, cpuInternal.registers[rd]);
-        console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}] ← 0x${cpuInternal.registers[rd].toString(16)}`);
-      }
-      break;
-    }
-
-    default:
-      console.warn(`Unhandled Thumb instruction: 0x${instr.toString(16)}`);
+  else {
+    console.warn(`Unhandled Thumb instr: 0x${instr.toString(16)}`);
   }
 
   return true;
