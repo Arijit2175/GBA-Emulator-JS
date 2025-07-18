@@ -1,0 +1,7 @@
+Opcode: 0110 L imm5 Rb Rd
+Bits:
+- 15-13: 011
+- 12: L (0=STR, 1=LDR)
+- 11-9: imm5 (offset in words)
+- 8-6: Rb (base register)
+- 5-3: Rd (destination/source)
