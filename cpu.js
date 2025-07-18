@@ -21,21 +21,23 @@ function executeThumb(instr) {
   const opcode = (instr & 0xF800) >>> 11;
 
   switch (opcode) {
-    case 0b00100: {
+    case 0b00100: { 
       const rd = (instr >> 8) & 0x7;
       const imm8 = instr & 0xFF;
       cpuInternal.registers[rd] = imm8;
       console.log(`MOV r${rd}, #${imm8}`);
       break;
     }
-    case 0b00110: {
+
+    case 0b00110: { 
       const rd = (instr >> 8) & 0x7;
       const imm8 = instr & 0xFF;
       cpuInternal.registers[rd] += imm8;
       console.log(`ADD r${rd}, #${imm8}`);
       break;
     }
-    case 0b00101: {
+
+    case 0b00101: { 
       const rd = (instr >> 8) & 0x7;
       const imm8 = instr & 0xFF;
       const result = cpuInternal.registers[rd] - imm8;
@@ -43,29 +45,32 @@ function executeThumb(instr) {
       console.log(`CMP r${rd}, #${imm8} → Z=${(cpuInternal.cpsr >>> 30) & 1}`);
       break;
     }
-    case 0b11010: {
+
+    case 0b11010: { 
       const offset11 = instr & 0x7FF;
-      const offset = ((offset11 << 21) >> 20);
+      const offset = ((offset11 << 21) >> 20); 
       cpuInternal.registers[15] += offset;
       console.log(`B ${offset}`);
       break;
     }
-    case 0b01100:
-    case 0b01101: {
+
+    case 0b01100: 
+    case 0b01101: { 
       const imm5 = (instr >> 6) & 0x1F;
       const rb = (instr >> 3) & 0x7;
       const rd = instr & 0x7;
       const addr = cpuInternal.registers[rb] + (imm5 << 2);
-      
+
       if (opcode & 1) {
-    cpuInternal.registers[rd] = memory.read32(addr);
-    console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}] → ${cpuInternal.registers[rd].toString(16)}`);
-  } else {
-    memory.write32(addr, cpuInternal.registers[rd]);
-    console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}] ← ${cpuInternal.registers[rd].toString(16)}`);
-  }
-  break;
+        cpuInternal.registers[rd] = memory.read32(addr);
+        console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}] → ${cpuInternal.registers[rd].toString(16)}`);
+      } else {
+        memory.write32(addr, cpuInternal.registers[rd]);
+        console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}] ← ${cpuInternal.registers[rd].toString(16)}`);
+      }
+      break;
     }
+
     default:
       console.warn(`Unhandled Thumb instruction: 0x${instr.toString(16)}`);
   }
