@@ -5,9 +5,9 @@ const cpuInternal = {
 
 function cpuReset() {
   cpuInternal.registers.fill(0);
-  cpuInternal.registers[13] = 0x03007F00;
-  cpuInternal.registers[15] = 0x08000000;
-  cpuInternal.cpsr = 0x00000030; 
+  cpuInternal.registers[13] = 0x03007F00; 
+  cpuInternal.registers[15] = 0x08000000; 
+  cpuInternal.cpsr = 0x00000030;
 }
 
 function fetchThumb16() {
@@ -20,41 +20,41 @@ function fetchThumb16() {
   }
 
   const instr = memory.read16(pc);
-  cpuInternal.registers[15] += 2;
   return instr;
 }
 
 function executeThumb(instr) {
-  const op = instr & 0xF800;
+  const regs = cpuInternal.registers;
+  let advancePC = true;
 
-  if (op === 0x2000) {
+  if ((instr & 0xF800) === 0x2000) {
     const rd = (instr >> 8) & 0x7;
     const imm = instr & 0xFF;
-    cpuInternal.registers[rd] = imm;
+    regs[rd] = imm;
     console.log(`MOV r${rd}, #${imm}`);
   }
 
   else if ((instr & 0xF800) === 0x2800) {
-    const rd = (instr >> 8) & 7;
+    const rd = (instr >> 8) & 0x7;
     const imm = instr & 0xFF;
-    const res = cpuInternal.registers[rd] - imm;
+    const res = regs[rd] - imm;
     cpuInternal.cpsr = (res === 0) ? 0x40000000 : 0;
-    console.log(`CMP r${rd}, #${imm} → Z=${cpuInternal.cpsr >>> 30}`);
+    console.log(`CMP r${rd}, #${imm} → Z=${(cpuInternal.cpsr >>> 30)}`);
   }
 
   else if ((instr & 0xF800) === 0x3000) {
-    const rd = (instr >> 8) & 7;
+    const rd = (instr >> 8) & 0x7;
     const imm = instr & 0xFF;
-    cpuInternal.registers[rd] += imm;
+    regs[rd] = (regs[rd] + imm) >>> 0;
     console.log(`ADD r${rd}, #${imm}`);
   }
 
   else if ((instr & 0xF800) === 0x4800) {
     const rd = (instr >> 8) & 0x7;
     const imm = (instr & 0xFF) << 2;
-    const addr = (cpuInternal.registers[15] & ~2) + imm;
-    const value = memory.read32(addr);
-    cpuInternal.registers[rd] = value;
+    const addr = (regs[15] + 4) & ~0x3;
+    const value = memory.read32(addr + imm);
+    regs[rd] = value;
     console.log(`LDR r${rd}, [PC + ${imm}] → 0x${value.toString(16)}`);
   }
 
@@ -63,28 +63,29 @@ function executeThumb(instr) {
     const imm5 = (instr >> 6) & 0x1F;
     const rb = (instr >> 3) & 0x7;
     const rd = instr & 0x7;
-    const addr = cpuInternal.registers[rb] + (imm5 << 2);
+    const addr = regs[rb] + (imm5 << 2);
 
     if (isLoad) {
-      cpuInternal.registers[rd] = memory.read32(addr);
-      console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}]`);
+      regs[rd] = memory.read32(addr);
+      console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}] → 0x${regs[rd].toString(16)}`);
     } else {
-      memory.write32(addr, cpuInternal.registers[rd]);
+      memory.write32(addr, regs[rd]);
       console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}]`);
     }
   }
 
   else if ((instr & 0xFFC0) === 0x4700) {
     const rm = instr & 0x7;
-    const dest = cpuInternal.registers[rm];
-    cpuInternal.registers[15] = dest & ~1;
-    console.log(`BX r${rm} → 0x${dest.toString(16)}`);
+    const target = regs[rm];
+    regs[15] = target & ~1;
+    advancePC = false;
+    console.log(`BX r${rm} → 0x${target.toString(16)}`);
   }
 
   else if ((instr & 0xF000) === 0xD000) {
     const cond = (instr >> 8) & 0xF;
-    const imm = instr & 0xFF;
-    const offset = ((imm << 24) >> 23); 
+    const imm8 = instr & 0xFF;
+    const offset = ((imm8 << 24) >> 23); 
     const z = (cpuInternal.cpsr >>> 30) & 1;
     let take = false;
 
@@ -93,8 +94,9 @@ function executeThumb(instr) {
     else if (cond === 0x1 && !z) take = true;
 
     if (take) {
-      cpuInternal.registers[15] += offset;
-      console.log(`B${cond.toString(16)} taken → offset ${offset}`);
+      regs[15] += offset + 2;
+      advancePC = false;
+      console.log(`B${cond.toString(16)} taken → PC += ${offset}`);
     } else {
       console.log(`B${cond.toString(16)} not taken`);
     }
@@ -103,7 +105,8 @@ function executeThumb(instr) {
   else if ((instr & 0xF800) === 0xE000) {
     const imm11 = instr & 0x7FF;
     const offset = ((imm11 << 21) >> 20); 
-    cpuInternal.registers[15] += offset;
+    regs[15] += offset + 2;
+    advancePC = false;
     console.log(`B ${offset}`);
   }
 
@@ -111,6 +114,7 @@ function executeThumb(instr) {
     console.warn(`Unhandled Thumb instr: 0x${instr.toString(16)}`);
   }
 
+  if (advancePC) regs[15] += 2;
   return true;
 }
 
