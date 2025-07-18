@@ -5,7 +5,7 @@ const cpuInternal = {
 
 function cpuReset() {
   cpuInternal.registers.fill(0);
-  cpuInternal.registers[13] = 0x03007F00;
+  cpuInternal.registers[13] = 0x03007F00; 
   cpuInternal.registers[15] = 0x08000000; 
   cpuInternal.cpsr = 0x00000030; 
 }
@@ -41,7 +41,7 @@ function executeThumb(instr) {
       const rd = (instr >> 8) & 0x7;
       const imm8 = instr & 0xFF;
       const result = cpuInternal.registers[rd] - imm8;
-      cpuInternal.cpsr = (result === 0 ? 0x40000000 : 0);
+      cpuInternal.cpsr = (result === 0 ? 0x40000000 : 0); 
       console.log(`CMP r${rd}, #${imm8} → Z=${(cpuInternal.cpsr >>> 30) & 1}`);
       break;
     }
