@@ -57,6 +57,14 @@ function executeThumb(instr) {
       const rd = instr & 0x7;
       const addr = cpuInternal.registers[rb] + (imm5 << 2);
       
+      if (opcode & 1) {
+    cpuInternal.registers[rd] = memory.read32(addr);
+    console.log(`LDR r${rd}, [r${rb}, #${imm5 << 2}] → ${cpuInternal.registers[rd].toString(16)}`);
+  } else {
+    memory.write32(addr, cpuInternal.registers[rd]);
+    console.log(`STR r${rd}, [r${rb}, #${imm5 << 2}] ← ${cpuInternal.registers[rd].toString(16)}`);
+  }
+  break;
     }
     default:
       console.warn(`Unhandled Thumb instruction: 0x${instr.toString(16)}`);
