@@ -1,5 +1,5 @@
 import { CPU } from './cpu.js';
-import { memory } from './memory.js';
+import { memory } from './memory/memory.js';
 
 let canvas = document.getElementById('screen');
 let ctx = canvas.getContext('2d');
