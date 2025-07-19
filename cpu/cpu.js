@@ -130,13 +130,13 @@ class CPU {
   }
 
   else {
-    console.warn(`⚠️ Unhandled Thumb opcode: 0x${opcode.toString(16)}`);
-  }
-
-  return true;
+  console.warn(`⚠️ Unhandled Thumb opcode: 0x${opcode.toString(16)} at PC=0x${regs[15].toString(16)}`);
+  this.halted = true;
 }
 
 
+  return true;
+}
 
   executeARM(instr) {
     const regs = this.registers;
@@ -194,22 +194,29 @@ class CPU {
   }
 
   run() {
-    this.halted = false;
-    let maxCycles = 1000;
+  this.halted = false;
+  const maxCycles = 10000;  
 
-    for (let cycle = 0; cycle < maxCycles; cycle++) {
-        try {
-            this.step();
-        } catch (e) {
-            console.error(`❌ Execution halted at cycle ${cycle}:`, e.message);
-            break;
-        }
+  for (let cycle = 0; cycle < maxCycles; cycle++) {
+    if (this.halted) {
+      console.warn(`⚠️ Execution halted at cycle ${cycle}`);
+      break;
     }
 
-    console.log("✅ CPU finished running", maxCycles, "cycles");
-    console.log("PC:", this.registers[15].toString(16));
-    console.log("r0:", this.registers[0]);
+    try {
+      const continueExecution = this.step();
+      if (!continueExecution) break;
+    } catch (e) {
+      console.error(`❌ Execution error at cycle ${cycle}:`, e.message);
+      break;
+    }
+  }
+
+  console.log("✅ CPU finished running", maxCycles, "cycles");
+  console.log("PC:", this.registers[15].toString(16));
+  console.log("r0:", this.registers[0]);
 }
+
 
   getState() {
     return {
