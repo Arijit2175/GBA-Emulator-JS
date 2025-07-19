@@ -174,14 +174,23 @@ class CPU {
     }
   }
 
-  run(cycles = 100) {
-    for (let i = 0; i < cycles; i++) {
-      if (!this.step()) {
-        console.warn(`Execution halted at cycle ${i}`);
-        break;
-      }
+  run() {
+    this.halted = false;
+    let maxCycles = 1000;
+
+    for (let cycle = 0; cycle < maxCycles; cycle++) {
+        try {
+            this.step();
+        } catch (e) {
+            console.error(`❌ Execution halted at cycle ${cycle}:`, e.message);
+            break;
+        }
     }
-  }
+
+    console.log("✅ CPU finished running", maxCycles, "cycles");
+    console.log("PC:", this.registers[15].toString(16));
+    console.log("r0:", this.registers[0]);
+}
 
   getState() {
     return {
