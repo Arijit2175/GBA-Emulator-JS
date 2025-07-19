@@ -1,10 +1,10 @@
-const BIOS = new Uint8Array(0x4000);
-const WRAM = new Uint8Array(0x40000);
-const IRAM = new Uint8Array(0x8000);
-const VRAM = new Uint8Array(0x18000);
-const IOREG = new Uint8Array(0x400);
-const PRAM = new Uint8Array(0x400);
-const OAM  = new Uint8Array(0x400);
+export const BIOS = new Uint8Array(0x4000);
+export const WRAM = new Uint8Array(0x40000);
+export const IRAM = new Uint8Array(0x8000);
+export const VRAM = new Uint8Array(0x18000);
+export const IOREG = new Uint8Array(0x400);
+export const PRAM = new Uint8Array(0x400);
+export const OAM  = new Uint8Array(0x400);
 
 function read8(addr) {
   addr = addr >>> 0;
