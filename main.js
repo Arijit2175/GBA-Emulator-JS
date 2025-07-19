@@ -1,5 +1,6 @@
 import { CPU } from './cpu/cpu.js';
 import { memory } from './memory/memory.js';
+import { rom, loadROM, getGameTitle } from './rom/rom.js';
 
 let canvas = document.getElementById('screen');
 let ctx = canvas.getContext('2d');
