@@ -43,7 +43,7 @@ class CPU {
   if (opcode === 0x0000) {
     console.log("🔹 NOP");
     return;
-}
+  }
 
   if ((opcode & 0xF800) === 0x1800) {
     const rd = opcode & 0x7;
@@ -111,12 +111,31 @@ class CPU {
     return false;
   }
 
+  else if ((opcode & 0xF800) === 0x6800) {
+    const rt = opcode & 0x7;
+    const rn = (opcode >> 3) & 0x7;
+    const offset = (opcode >> 6) & 0x1F;
+    const addr = (regs[rn] + (offset << 2)) >>> 0;
+    regs[rt] = memory.read32(addr);
+    console.log(`LDR r${rt}, [r${rn}, #${offset << 2}] => r${rt} = 0x${regs[rt].toString(16)}`);
+  }
+
+  else if ((opcode & 0xF800) === 0x6000) {
+    const rt = opcode & 0x7;
+    const rn = (opcode >> 3) & 0x7;
+    const offset = (opcode >> 6) & 0x1F;
+    const addr = (regs[rn] + (offset << 2)) >>> 0;
+    memory.write32(addr, regs[rt]);
+    console.log(`STR r${rt}, [r${rn}, #${offset << 2}] => [0x${addr.toString(16)}] = 0x${regs[rt].toString(16)}`);
+  }
+
   else {
     console.warn(`⚠️ Unhandled Thumb opcode: 0x${opcode.toString(16)}`);
   }
 
   return true;
 }
+
 
 
   executeARM(instr) {
