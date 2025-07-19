@@ -50,7 +50,7 @@ function write32(addr, val) {
   write8(addr + 3, (val >> 24) & 0xFF);
 }
 
-window.memory = {
+export const memory = {
   read8, read16, read32,
   write8, write16, write32
 };
