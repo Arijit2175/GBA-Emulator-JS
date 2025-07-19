@@ -1,4 +1,4 @@
-import { CPU } from './cpu.js';
+import { CPU } from './cpu/cpu.js';
 import { memory } from './memory/memory.js';
 
 let canvas = document.getElementById('screen');
