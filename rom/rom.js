@@ -1,5 +1,7 @@
-function loadROM(romData) {
-  romSize = Math.min(romData.length, rom.length);
+export const rom = new Uint8Array(32 * 1024 * 1024); 
+
+export function loadROM(romData) {
+  const romSize = Math.min(romData.length, rom.length);
   for (let i = 0; i < romSize; i++) {
     rom[i] = romData[i];
   }
@@ -8,11 +10,11 @@ function loadROM(romData) {
   console.log(`📛 Game Title: ${getGameTitle(rom)}`);
 }
 
-function getGameTitle(rom) {
+export function getGameTitle(romBuffer) {
   let title = "";
   for (let i = 0xA0; i <= 0xAB; i++) {
-    if (rom[i] === 0) break;
-    title += String.fromCharCode(rom[i]);
+    if (romBuffer[i] === 0) break;
+    title += String.fromCharCode(romBuffer[i]);
   }
   return title.trim();
 }
