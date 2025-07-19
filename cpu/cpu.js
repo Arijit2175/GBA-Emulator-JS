@@ -38,49 +38,81 @@ class CPU {
   }
 
   executeThumb(opcode) {
-    const regs = this.registers;
+  const regs = this.registers;
 
-    if ((opcode & 0xF800) === 0x1800) {
-      const rd = opcode & 0x7;
-      const rs = (opcode >> 3) & 0x7;
-      const rn = (opcode >> 6) & 0x7;
-      regs[rd] = (regs[rs] + regs[rn]) >>> 0;
-      console.log(`ADD r${rd}, r${rs}, r${rn}`);
-    }
-
-    else if ((opcode & 0xFF00) === 0xB500) {
-      regs[13] = (regs[13] - 4) >>> 0;
-      memory.write32(regs[13], regs[14]);
-      console.log(`PUSH {lr}`);
-    }
-
-    else if ((opcode & 0xFF00) === 0xBD00) {
-      regs[15] = memory.read32(regs[13]);
-      regs[13] = (regs[13] + 4) >>> 0;
-      console.log(`POP {pc}`);
-      return false;
-    }
-
-    else if ((opcode & 0xF800) === 0x3000) {
-      const rd = (opcode >> 8) & 0x7;
-      const imm = opcode & 0xFF;
-      regs[rd] = (regs[rd] + imm) >>> 0;
-      console.log(`ADD r${rd}, #${imm}`);
-    }
-
-    else if ((opcode & 0xFF87) === 0x4687) {
-      const rd = (opcode >> 0) & 0x7;
-      const rs = (opcode >> 3) & 0xF;
-      regs[rd] = regs[rs];
-      console.log(`MOV r${rd}, r${rs}`);
-    }
-
-    else {
-      console.warn(`Unhandled Thumb opcode: 0x${opcode.toString(16)}`);
-    }
-
-    return true;
+  if ((opcode & 0xF800) === 0x1800) {
+    const rd = opcode & 0x7;
+    const rs = (opcode >> 3) & 0x7;
+    const rn = (opcode >> 6) & 0x7;
+    regs[rd] = (regs[rs] + regs[rn]) >>> 0;
+    console.log(`ADD r${rd}, r${rs}, r${rn}`);
   }
+
+  else if ((opcode & 0xF800) === 0x3000) {
+    const rd = (opcode >> 8) & 0x7;
+    const imm = opcode & 0xFF;
+    regs[rd] = (regs[rd] + imm) >>> 0;
+    console.log(`ADD r${rd}, #${imm}`);
+  }
+
+  else if ((opcode & 0xF800) === 0x2000) {
+    const rd = (opcode >> 8) & 0x7;
+    const imm = opcode & 0xFF;
+    regs[rd] = imm;
+    console.log(`MOV r${rd}, #${imm}`);
+  }
+
+  else if ((opcode & 0xF800) === 0x2800) {
+    const rn = (opcode >> 8) & 0x7;
+    const imm = opcode & 0xFF;
+    const result = (regs[rn] - imm) >>> 0;
+    console.log(`CMP r${rn}, #${imm} => ${result}`);
+  }
+
+  else if ((opcode & 0xFFC0) === 0x4600) {
+    const rd = ((opcode >> 0) & 0x7) | ((opcode >> 4) & 0x8);
+    const rs = ((opcode >> 3) & 0xF);
+    regs[rd] = regs[rs];
+    console.log(`MOV r${rd}, r${rs}`);
+  }
+
+  else if ((opcode & 0xFF87) === 0x4700) {
+    const rs = (opcode >> 3) & 0xF;
+    const target = regs[rs];
+    regs[15] = target & ~1;
+    this.cpsr = (target & 1) ? (this.cpsr | (1 << 5)) : (this.cpsr & ~(1 << 5));
+    console.log(`BX r${rs} => ${target.toString(16)} | Mode: ${this.isThumbMode() ? "Thumb" : "ARM"}`);
+    return false;
+  }
+
+  else if ((opcode & 0xF800) === 0xE000) {
+    const offset11 = opcode & 0x7FF;
+    const signedOffset = ((offset11 << 21) >> 20); 
+    regs[15] = (regs[15] + signedOffset + 2) >>> 0;
+    console.log(`B ${signedOffset >= 0 ? "+" : ""}${signedOffset} => PC=0x${regs[15].toString(16)}`);
+    return false;
+  }
+
+  else if ((opcode & 0xFF00) === 0xB500) {
+    regs[13] = (regs[13] - 4) >>> 0;
+    memory.write32(regs[13], regs[14]);
+    console.log(`PUSH {lr}`);
+  }
+
+  else if ((opcode & 0xFF00) === 0xBD00) {
+    regs[15] = memory.read32(regs[13]);
+    regs[13] = (regs[13] + 4) >>> 0;
+    console.log(`POP {pc}`);
+    return false;
+  }
+
+  else {
+    console.warn(`⚠️ Unhandled Thumb opcode: 0x${opcode.toString(16)}`);
+  }
+
+  return true;
+}
+
 
   executeARM(instr) {
     const regs = this.registers;
