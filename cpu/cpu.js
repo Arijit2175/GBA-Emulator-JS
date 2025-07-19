@@ -40,6 +40,11 @@ class CPU {
   executeThumb(opcode) {
   const regs = this.registers;
 
+  if (opcode === 0x0000) {
+    console.log("🔹 NOP");
+    return;
+}
+
   if ((opcode & 0xF800) === 0x1800) {
     const rd = opcode & 0x7;
     const rs = (opcode >> 3) & 0x7;
